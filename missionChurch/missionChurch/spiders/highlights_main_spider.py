@@ -3,7 +3,10 @@ import json
 import scrapy
 from scrapy.selector import Selector
 import re
+
+from missionChurch import items
 from missionChurch.items import Image
+
 
 # TODO: Mark top level missionchurch dir as sources root in PyCharm
 # HTTPCache is enabled in Scrapy setting.py
@@ -42,59 +45,69 @@ class HighlightsSpider(scrapy.Spider):
     allowed_domains = ['toolbox-media.com']
     start_urls = ['https://toolbox-media.com/missioncooljc/']
 
+    # def __init__(self):
+    #     super().__init__()
+    #
+    #     # A flag, set after post-processing is finished, to
+    #     # avoid an infinite loop.
+    #     self.data_submitted = False
+    #
+    #     # The object to return for conversion to a JSON tree.
+    #     # All the parse methods add their results to this
+    #     # structure.
+    #     self.data = items.Image(categories=[])
+
     def parse(self, response):
         items = []
         ditems = {}
         widgets = response.xpath("//section[contains(@id,'highlight')]")
         selector = Selector(response)
         regex = re.compile(r'[\n\r\t]')
-
+        ditems['data'] = {}
+        items.append(ditems)
         for section in widgets:
             # selector = Selector(section)
-            try:
-                # item = HighlightItem()
-                # item['highlightId'] = section.xpath(".//@id").get()
-                # item['title'] = section.xpath(".//div[contains(@class, 'title')]//h1/text()").get()
-                # item['caption'] = section.xpath(".//div[contains(@class, 'description')]//text()").get()
-                # # item['caption'] = regex.sub(' ', item.caption).strip()
+            # item = HighlightItem()
+            # item['highlightId'] = section.xpath(".//@id").get()
+            # item['title'] = section.xpath(".//div[contains(@class, 'title')]//h1/text()").get()
+            # item['caption'] = section.xpath(".//div[contains(@class, 'description')]//text()").get()
+            # # item['caption'] = regex.sub(' ', item.caption).strip()
 
-                subitem = Image()
-                subitem['highlightId'] = section.xpath(".//@id").get()
-                print(subitem['highlightId'])
-                subitem['title'] = section.xpath(".//div[contains(@class, 'title')]//h1/text()").get()
-                caption = section.xpath(".//div[contains(@class, 'description')]//text()").get()
+            subitem = Image()
+            subitem['highlight'] = {}
+            subitem['highlight']['highlightId'] = section.xpath(".//@id").get()
+            subitem['highlight']['title'] = section.xpath(".//div[contains(@class, 'title')]//h1/text()").get()
+            caption = section.xpath(".//div[contains(@class, 'description')]//text()").get()
 
-                # TODO: Caption is blank for several Highlight widgets
-                # TODO: Handle this in android or python
-                if caption is not None:
-                    subitem['caption'] = regex.sub(' ', caption).strip()  # .encode('ascii', 'ignore')
-                subitem['imageUrl'] = section.xpath(".//div//img").attrib['src']
-                subitem['width'] = section.xpath(".//div//img").attrib['width']
-                subitem['height'] = section.xpath(".//div//img").attrib['height']
+            # TODO: Caption is blank for several Highlight widgets
+            # TODO: Handle this in android or python
+            if caption is not None:
+                subitem['highlight']['caption'] = regex.sub(' ', caption).strip()  # .encode('ascii', 'ignore')
+            subitem['highlight']['imageUrl'] = section.xpath(".//div//img").attrib['src']
+            subitem['highlight']['width'] = section.xpath(".//div//img").attrib['width']
+            subitem['highlight']['height'] = section.xpath(".//div//img").attrib['height']
 
-                subitem['followUrl'] = section.xpath(".//@href").get()
+            subitem['highlight']['followUrl'] = section.xpath(".//@href").get()
 
-                # item.highlightId = section.xpath(".//@id").get()
-                # item.title = section.xpath(".//div[contains(@class, 'title')]//h1/text()").get()
-                # item.caption = section.xpath(".//div[contains(@class, 'description')]//text()").get()
-                # item.caption = regex.sub(' ', item.caption).strip()
-                #
-                # # TODO: check URL domain prior to storing data --> section.xpath(".//@href").get() FOR PASTOR first element
-                # if len(section.xpath(".//div/a/img").attrib) > 0:
-                #     item.Image.imageUrl = section.xpath(".//div/a/img").attrib['src']
-                #     item.Image.width = section.xpath(".//div/a/img").attrib['width']
-                #     item.Image.height = section.xpath(".//div/a/img").attrib['height']
+            # item.highlightId = section.xpath(".//@id").get()
+            # item.title = section.xpath(".//div[contains(@class, 'title')]//h1/text()").get()
+            # item.caption = section.xpath(".//div[contains(@class, 'description')]//text()").get()
+            # item.caption = regex.sub(' ', item.caption).strip()
+            #
+            # # TODO: check URL domain prior to storing data --> section.xpath(".//@href").get() FOR PASTOR first element
+            # if len(section.xpath(".//div/a/img").attrib) > 0:
+            #     item.Image.imageUrl = section.xpath(".//div/a/img").attrib['src']
+            #     item.Image.width = section.xpath(".//div/a/img").attrib['width']
+            #     item.Image.height = section.xpath(".//div/a/img").attrib['height']
 
-                # [a for a in dir(item) if not a.startswith('__') and not callable(getattr(item, a))]
-                # for attr, value in item.__dict__.items():
-                #     item.__getattribute__(value) = regex.sub(' ', value).strip()
+            # [a for a in dir(item) if not a.startswith('__') and not callable(getattr(item, a))]
+            # for attr, value in item.__dict__.items():
+            #     item.__getattribute__(value) = regex.sub(' ', value).strip()
 
-                yield subitem
-                # items.append(item)
-                # ditems[item.highlightId] = item
-            except (TypeError, KeyError):  # (RuntimeError, TypeError, NameError):
-                pass
+            # yield subitem
+            items.append(subitem)
 
-            # s = json.dumps(items, default=lambda x: x.__dict__)
+        # s = json.dumps(items, default=lambda x: x.__dict__)
 
         # TODO: capture href links
+        return items

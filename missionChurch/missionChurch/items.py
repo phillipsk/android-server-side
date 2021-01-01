@@ -6,8 +6,8 @@
 # https://docs.scrapy.org/en/latest/topics/items.html
 
 import scrapy
-from dataclasses import dataclass, field
-from typing import Optional
+# from dataclasses import dataclass, field
+# from typing import Optional
 
 
 class HighlightItem(scrapy.Item):
@@ -17,11 +17,11 @@ class HighlightItem(scrapy.Item):
     pass
 
 
-@dataclass
-class HighlightDC(scrapy.Item):
-    highlightId: Optional[str] = field(default=None)
-    title: Optional[str] = field(default=None)
-    caption: Optional[str] = field(default=None)
+# @dataclass
+# class HighlightDC(scrapy.Item):
+#     highlightId: Optional[str] = field(default=None)
+#     title: Optional[str] = field(default=None)
+#     caption: Optional[str] = field(default=None)
 
 
 class Zoom(HighlightItem):
@@ -32,6 +32,7 @@ class Zoom(HighlightItem):
 
 # TODO: reverse hierarchy Image & Zoom should be top classes?
 class Image(Zoom, HighlightItem):
+    highlight = scrapy.Field()
     imageUrl = scrapy.Field()
     width = scrapy.Field()
     height = scrapy.Field()
