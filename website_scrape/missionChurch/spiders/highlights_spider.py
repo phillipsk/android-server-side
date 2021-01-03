@@ -1,11 +1,21 @@
+# from __future__ import absolute_import
+import os
 import re
 import scrapy
 from scrapy.crawler import CrawlerProcess, CrawlerRunner
 from scrapy.selector import Selector
 from scrapy.utils.log import configure_logging
 from scrapy.utils.project import get_project_settings
+# from items import Image
 from missionChurch.items import Image
 from twisted.internet import reactor
+
+
+# import sys
+# import os
+#
+# sys.path.append("..")
+# sys.path.append(os.path.dirname(os.path.abspath('..')))
 
 
 # Mark top level missionchurch dir as sources root in PyCharm
@@ -18,13 +28,14 @@ from twisted.internet import reactor
 # updated with pipeline and feed functionality
 # added CrawlerProcess to run spider from script
 
+
 class HighlightsSpider(scrapy.Spider):
     name = "highlights"
     allowed_domains = ['toolbox-media.com']
     start_urls = ['https://toolbox-media.com/missioncooljc/']
 
     def parse(self, response):
-        items = []
+        citems = []
         widgets = response.xpath("//section[contains(@id,'highlight')]")
         selector = Selector(response)  # debug in PyCharm evaluate expression
         regex = re.compile(r'[\n\r\t]')
@@ -40,8 +51,8 @@ class HighlightsSpider(scrapy.Spider):
             subitem['width'] = section.xpath(".//div//img").attrib['width']
             subitem['height'] = section.xpath(".//div//img").attrib['height']
             subitem['followUrl'] = section.xpath(".//@href").get()
-            items.append(subitem)
-        return items
+            citems.append(subitem)
+        return citems
 
 
 # process = CrawlerProcess(settings=get_project_settings())
@@ -49,11 +60,33 @@ class HighlightsSpider(scrapy.Spider):
 # process.crawl(HighlightsSpider)
 # process.start()  # the script will block here until the crawling is finished
 
-# configure_logging()
-runner = CrawlerRunner(settings=get_project_settings())
-runner.crawl(HighlightsSpider)
-# runner.crawl(MySpider2)
-d = runner.join()
-d.addBoth(lambda _: reactor.stop())
 
-reactor.run()  # the script will block here until all crawling jobs are finished
+def crawl():
+    # configure_logging()
+    runner = CrawlerRunner(settings=get_project_settings())
+    runner.crawl(HighlightsSpider)
+    # runner.crawl(MySpider2)
+    return runner.join
+    # d = runner.join()
+    # d.addBoth(lambda _: reactor.stop())
+
+    # reactor.run()  # the script will block here until all crawling jobs are finished
+
+
+def _crawl(spider_name=None):
+    if spider_name:
+        os.system('scrapy crawl %s' % spider_name)
+    return None
+
+
+# def run_crawler():
+#
+#     spider_names = ['spider1', 'spider2', 'spider2']
+#
+#     pool = Pool(processes=len(spider_names))
+#     pool.map(_crawl, spider_names)
+
+if __name__ == "__main__":
+    # crawl()
+    # reactor.run()
+    _crawl("highlights")
